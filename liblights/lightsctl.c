@@ -25,12 +25,15 @@ int main(int argc, char *argv[]) {
     int res = 0;
     unsigned int maxled = 0;
     char property[PROPERTY_VALUE_MAX];
+    char property_start[PROPERTY_VALUE_MAX];
+    char property_end[PROPERTY_VALUE_MAX];
     unsigned int rgb;
     unsigned int colorstrip = maxled;
     unsigned int colors[8];
     unsigned int ledcount = 0;
     unsigned int padding = 0;
     unsigned int ledpos = 0;
+    unsigned int setcolor = 0;
     struct avr_led_rgb_vals color;
     struct avr_led_set_range_vals *reg;
 
@@ -51,23 +54,43 @@ int main(int argc, char *argv[]) {
 
     if (argc==1) {
         char *nexttok;
+        char *starttok;
+        char *endtok;
         /* use default */
         property_get("persist.sys.ringcolor", property, "14428");
+        property_get("persist.sys.ringcolorstart", property_start, "0");
+        property_get("persist.sys.ringcolorend", property_end, "32");
+
         nexttok=strtok(property," ");
-        ledcount=0;
+        starttok = strtok(property_start," ");
+        endtok = strtok(property_end," ");
+
+        ledcount = atoi(starttok);
+        maxled = atoi(endtok);
+        printf("starttok is %d, endtok is %d", ledcount, maxled);
+        //ledcount=0;
         while (nexttok && ledcount<=maxled) {
             colors[ledcount] = atoi(nexttok);
-            //printf("Set %d to %d\n",ledcount,colors[ledcount]);
+            printf("Set %d to %d\n",ledcount,colors[ledcount]);
             ledcount++;
             nexttok = strtok(NULL," ");
         }
-    } else {
-        colors[0]=atoi(argv[1]);
-        ledcount=1;
-        while (ledcount < (unsigned int)argc-1 && ledcount<=maxled) {
-            colors[ledcount]=atoi(argv[ledcount+1]);
+    }
+    else if (argc==4) {
+        //colors[0]=atoi(argv[1]);
+        setcolor = atoi(argv[1]);
+        ledcount = atoi(argv[2]);
+        maxled = atoi(argv[3]);
+        while (ledcount<=maxled) {
+            colors[ledcount] = setcolor;
+            printf("Set %d to %d\n",ledcount,colors[ledcount]);
             ledcount++;
         }
+        //ledcount=1;
+        //while (ledcount < (unsigned int)argc-1 && ledcount<=maxled) {
+        //    colors[ledcount]=atoi(argv[ledcount+1]);
+        //    ledcount++;
+        //}
     }
 
 
